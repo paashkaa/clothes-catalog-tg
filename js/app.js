@@ -119,6 +119,7 @@ function initActionButtons() {
         Telegram.WebApp.MainButton.onClick(() => {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
+				alert('✅ Кнопка нажата!\nОтправляю: ' + (photo.original_path || photo.original));
                 const filename = photo.original_path || photo.original;
 				console.log('📤 [DEBUG] Отправляем в бота:', { filename });
                 const data = { filename: filename };
