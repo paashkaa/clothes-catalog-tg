@@ -122,6 +122,9 @@ function initActionButtons() {
                 const filename = photo.original_path || photo.original;
 				console.log('📤 [DEBUG] Отправляем в бота:', { filename });
                 const data = { filename: filename };
+				if (state.isTelegram && Telegram.WebApp.HapticFeedback?.notificationOccurred) {
+				    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+				}
                 Telegram.WebApp.sendData(JSON.stringify(data));
                 Telegram.WebApp.close();
             }
@@ -132,6 +135,8 @@ function initActionButtons() {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]?.path) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
                 const link = document.createElement('a');
+				const filename = photo.original_path || photo.original;
+				console.log('📤 [DEBUG] Отправляем в бота:', { filename });
                 link.href = photo.path;
                 link.download = photo.name;
                 document.body.appendChild(link);
