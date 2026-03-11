@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Каталог одежды для LooksFactory">
+    <title>Каталог одежды</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="container">
+            <h1 class="title">
+                <span class="icon">👗</span>
+                <span>Каталог одежды</span>
+            </h1>
+            <div class="controls">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Поиск..." autocomplete="off">
+                </div>
+                <button class="btn btn-secondary" id="toggle-view">
+                    <span class="btn-icon">🗂️</span>
+                    <span id="view-text">Папки</span>
+                </button>
+                <button class="btn btn-secondary" id="toggle-theme">
+                    <span class="btn-icon">🌙</span>
+                    <span id="theme-text">Тёмная</span>
+                </button>
+                <button class="btn btn-secondary" id="refresh-btn">
+                    <span class="btn-icon">🔄</span>
+                    Обновить
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="container">
+        <!-- Сетка папок / Плоский вид -->
+        <div id="folders-container" class="folders-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка каталога...</p>
+            </div>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-icon">📦</div>
+            <h2 class="empty-title">Каталог пуст</h2>
+            <p class="empty-text">Добавьте изображения в папку с одеждой</p>
+        </div>
+    </main>
+
+    <!-- Модальное окно папки -->
+    <div id="folder-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">Папка</h2>
+                <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="photos-container" class="photos-container">
+                    <!-- Фото будут загружаться сюда -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox (полноэкранный просмотр) -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <!-- Индикатор смены папки -->
+            <div id="folder-change-indicator" class="folder-change-indicator">
+                ➡️ Папка: <span id="new-folder-name"></span>
+            </div>
+            
+            <!-- Счётчик фото -->
+            <div class="photo-counter" id="photo-counter">1 / 100</div>
+            
+            <!-- Индикатор загрузки -->
+            <div class="photo-loading" id="photo-loading"></div>
+            
+            <!-- Контейнер изображения -->
+            <div class="lightbox-image-container">
+                <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            </div>
+            
+            <!-- Информация под изображением -->
+            <div class="lightbox-info">
+                <div class="lightbox-folder-info" id="lightbox-folder">Папка</div>
+                <button class="lightbox-save" id="lightbox-save">✨ Применить</button>
+                <div class="lightbox-file-info" id="lightbox-filename">filename.webp</div>
+            </div>
+        </div>
+        
+        <!-- Кнопки навигации -->
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">‹</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">›</button>
+        <button class="lightbox-close" id="lightbox-close">✕</button>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="js/app.js"></script>
+</body>
+</html>
