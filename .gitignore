@@ -3,3 +3,6 @@
 
 # Исключаем батник для локального сервера (если он в корне)
 localweb.bat
+GitHub.txt
+push-normal.bat
+push-force.bat

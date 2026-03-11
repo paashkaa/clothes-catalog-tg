@@ -148,7 +148,9 @@ function initActionButtons() {
         Telegram.WebApp.MainButton.onClick(() => {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
-                const data = { filename: photo.path.replace('images/', '') };
+                const data = { 
+                    filename: photo.original || photo.original_path 
+                };
                 Telegram.WebApp.sendData(JSON.stringify(data));
                 Telegram.WebApp.close();
             }
