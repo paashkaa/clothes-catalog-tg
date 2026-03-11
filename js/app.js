@@ -149,6 +149,7 @@ function initActionButtons() {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
                 const filename = photo.original_path || photo.original;
+				console.log('📤 [DEBUG] Отправляем в бота:', { filename });
                 const data = { filename: filename };
                 Telegram.WebApp.sendData(JSON.stringify(data));
                 Telegram.WebApp.close();
