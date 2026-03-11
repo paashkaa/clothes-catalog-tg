@@ -95,34 +95,6 @@ function setupTheme() {
     applyTheme();
     updateThemeButton();
 }
-/*
-function applyTheme() {
-    if (state.isTelegram) {
-        document.documentElement.style.setProperty('--bg-dark', 'var(--tg-theme-bg-color)');
-        document.documentElement.style.setProperty('--bg-card', 'var(--tg-theme-secondary-bg-color)');
-        document.documentElement.style.setProperty('--text-primary', 'var(--tg-theme-text-color)');
-        document.documentElement.style.setProperty('--text-secondary', 'var(--tg-theme-hint-color)');
-        document.documentElement.style.setProperty('--border-color', 'var(--tg-theme-border-color, #333)');
-        document.documentElement.style.setProperty('--accent', 'var(--tg-theme-link-color)');
-    } else {
-        if (state.theme === 'dark') {
-            document.documentElement.style.setProperty('--bg-dark', '#121212');
-            document.documentElement.style.setProperty('--bg-card', '#1e1e1e');
-            document.documentElement.style.setProperty('--text-primary', '#e0e0e0');
-            document.documentElement.style.setProperty('--text-secondary', '#aaa');
-            document.documentElement.style.setProperty('--border-color', '#333');
-            document.documentElement.style.setProperty('--accent', '#6c63ff');
-        } else {
-            document.documentElement.style.setProperty('--bg-dark', '#ffffff');
-            document.documentElement.style.setProperty('--bg-card', '#f5f5f5');
-            document.documentElement.style.setProperty('--text-primary', '#333333');
-            document.documentElement.style.setProperty('--text-secondary', '#666666');
-            document.documentElement.style.setProperty('--border-color', '#ddd');
-            document.documentElement.style.setProperty('--accent', '#6c63ff');
-        }
-    }
-}
-*/
 
 function applyTheme() {
     if (state.isTelegram) {
@@ -143,8 +115,7 @@ function updateThemeButton() {
 function initActionButtons() {
     if (state.isTelegram && Telegram.WebApp?.MainButton) {
         Telegram.WebApp.MainButton.setText('✨ Применить');
-        Telegram.WebApp.MainButton.show();
-        Telegram.WebApp.MainButton.enable();
+        Telegram.WebApp.MainButton.hide();
         Telegram.WebApp.MainButton.onClick(() => {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
@@ -469,6 +440,11 @@ function openLightbox(photoIndex) {
     if (state.isTelegram && Telegram.WebApp.HapticFeedback?.impactOccurred) {
         Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
+	// 🔥 ПОКАЗЫВАЕМ КНОПКУ "ПРИМЕНИТЬ" ТОЛЬКО В ЛАЙТБОКСЕ
+    if (state.isTelegram && Telegram.WebApp?.MainButton) {
+        Telegram.WebApp.MainButton.show();
+        Telegram.WebApp.MainButton.enable();
+    }
 }
 
 function updateLightbox() {
@@ -568,7 +544,9 @@ function showFolderChangeIndicator(newFolderName) {
 function closeLightbox() {
     elements.lightbox.classList.remove('active');
     document.body.style.overflow = 'auto';
-    if (state.isTelegram) Telegram.WebApp.MainButton?.hide();
+    if (state.isTelegram && Telegram.WebApp?.MainButton) {
+        Telegram.WebApp.MainButton.hide();
+    }
 }
 
 function handleKeyboardNavigation(e) {
