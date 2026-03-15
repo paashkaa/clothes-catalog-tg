@@ -153,7 +153,7 @@ function initActionButtons() {
 				}
                 const data = { filename: filename };
                 Telegram.WebApp.sendData(JSON.stringify(data));
-                Telegram.WebApp.close();
+                //Telegram.WebApp.close();
             }
         });
     } else if (elements.lightboxSave) {
