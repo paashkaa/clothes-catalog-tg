@@ -53,12 +53,6 @@ const state = {
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 async function init() {
     console.log('Инициализация каталога одежды...');
-	if (window.Telegram?.WebApp) {
-	    Telegram.WebApp.ready();
-        console.log("Telegram.WebApp.ready() called");
-        console.log("Telegram.WebApp.initData =", Telegram.WebApp.initData);
-        console.log("Telegram.WebApp.initDataUnsafe =", Telegram.WebApp.initDataUnsafe);
-    }
     
     checkEnvironment();
     setupTheme();
@@ -148,18 +142,35 @@ function updateThemeButton() {
 
 function initActionButtons() {
     if (state.isTelegram && Telegram.WebApp?.MainButton) {
-        Telegram.WebApp.MainButton.setText('✨ Применить');
+        Telegram.WebApp.MainButton.setText('📋 Скопировать путь');
         Telegram.WebApp.MainButton.hide();
         Telegram.WebApp.MainButton.onClick(() => {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
-                const filename = photo.original_path || photo.original;
-				if (state.isTelegram && Telegram.WebApp.HapticFeedback?.notificationOccurred) {
-				    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-				}
-                const data = { filename: filename };
-                Telegram.WebApp.sendData(JSON.stringify(data));
-                //Telegram.WebApp.close();
+                const filename = photo.original_path || photo.original; // например, "clothes_library/25-02-2026/25-02-2026-195837.png"
+                if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }
+                // Копируем в буфер обмена
+                const textToCopy = filename;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        Telegram.WebApp.showAlert(`✅ Путь скопирован: ${textToCopy}\nТеперь отправьте это сообщение боту.`);
+                    }).catch(() => {
+                        Telegram.WebApp.showAlert('❌ Не удалось скопировать. Попробуйте вручную.');
+                    });
+                } else {
+                    // fallback
+                    const textarea = document.createElement('textarea');
+                    textarea.value = textToCopy;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    Telegram.WebApp.showAlert(`✅ Путь скопирован: ${textToCopy}\nТеперь отправьте это сообщение боту.`);
+                }
+                // Закрываем Web App после копирования (опционально)
+                Telegram.WebApp.close();
             }
         });
     } else if (elements.lightboxSave) {
@@ -476,7 +487,7 @@ function openLightbox(photoIndex) {
     if (state.isTelegram && Telegram.WebApp.HapticFeedback?.impactOccurred) {
         Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
-	// 🔥 ПОКАЗЫВАЕМ КНОПКУ "ПРИМЕНИТЬ" ТОЛЬКО В ЛАЙТБОКСЕ
+	// 🔥 ПОКАЗЫВАЕМ КНОПКУ "📋 Скопировать путь" ТОЛЬКО В ЛАЙТБОКСЕ
 	if (state.isTelegram && Telegram.WebApp?.MainButton) {
         Telegram.WebApp.MainButton.show();
         Telegram.WebApp.MainButton.enable();

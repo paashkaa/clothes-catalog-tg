@@ -109,19 +109,5 @@
 
     <!-- Скрипты -->
     <script src="js/app.js"></script>
-    <button id="tg-test-btn" style="position:fixed;bottom:20px;right:20px;z-index:9999;">
-    SEND TEST
-    </button>
-    
-    <script>
-    document.getElementById("tg-test-btn").onclick = function () {
-        if (window.Telegram && Telegram.WebApp) {
-            console.log("Sending TEST_DATA");
-            Telegram.WebApp.sendData("HELLO_TEST");
-        } else {
-            console.log("Telegram WebApp not detected");
-        }
-    };
-    </script>
 </body>
 </html>
