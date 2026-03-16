@@ -53,6 +53,12 @@ const state = {
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 async function init() {
     console.log('Инициализация каталога одежды...');
+	if (window.Telegram?.WebApp) {
+	    Telegram.WebApp.ready();
+        console.log("Telegram.WebApp.ready() called");
+        console.log("Telegram.WebApp.initData =", Telegram.WebApp.initData);
+        console.log("Telegram.WebApp.initDataUnsafe =", Telegram.WebApp.initDataUnsafe);
+    }
     
     checkEnvironment();
     setupTheme();
