@@ -170,7 +170,7 @@ function initActionButtons() {
                     Telegram.WebApp.showAlert(`✅ Путь скопирован: ${textToCopy}\nТеперь отправьте это сообщение боту.`);
                 }
                 // Закрываем Web App после копирования (опционально)
-                Telegram.WebApp.close();
+                setTimeout(() => Telegram.WebApp.close(), 100);
             }
         });
     } else if (elements.lightboxSave) {
