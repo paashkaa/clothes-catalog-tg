@@ -140,6 +140,24 @@ function updateThemeButton() {
     }
 }
 
+function showToast(message, duration = 1500) {
+    const existingToast = document.getElementById('custom-toast');
+    if (existingToast) existingToast.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'custom-toast';
+    toast.className = 'custom-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+        }, 300);
+    }, duration);
+}
+
 function initActionButtons() {
     if (state.isTelegram && Telegram.WebApp?.MainButton) {
         Telegram.WebApp.MainButton.setText('📋 Скопировать путь');
@@ -155,7 +173,8 @@ function initActionButtons() {
                 const textToCopy = filename;
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(textToCopy).then(() => {
-                        Telegram.WebApp.showAlert(`✅ Путь скопирован: ${textToCopy}\nТеперь отправьте это сообщение боту.`);
+                        showToast(`✅ Путь скопирован: ${textToCopy}`);
+						setTimeout(() => Telegram.WebApp.close(), 1000);
                     }).catch(() => {
                         Telegram.WebApp.showAlert('❌ Не удалось скопировать. Попробуйте вручную.');
                     });
@@ -167,10 +186,9 @@ function initActionButtons() {
                     textarea.select();
                     document.execCommand('copy');
                     document.body.removeChild(textarea);
-                    Telegram.WebApp.showAlert(`✅ Путь скопирован: ${textToCopy}\nТеперь отправьте это сообщение боту.`);
+                    showToast(`✅ Путь скопирован: ${textToCopy}`);
+					setTimeout(() => Telegram.WebApp.close(), 1000);
                 }
-                // Закрываем Web App после копирования (опционально)
-                setTimeout(() => Telegram.WebApp.close(), 100);
             }
         });
     } else if (elements.lightboxSave) {

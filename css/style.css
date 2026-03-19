@@ -951,6 +951,35 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════════ */
+/*  📢 10. КАСТОМНЫЙ ТОСТ-УВЕДОМЛЕНИЕ                                             */
+/* ════════════════════════════════════════════════════════════════════════════════ */
+
+.custom-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--photo-counter-bg, rgba(0, 0, 0, 0.8));
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  z-index: 10001;
+  font-size: 16px;
+  box-shadow: var(--shadow);
+  transition: opacity 0.3s ease;
+  pointer-events: none;      /* чтобы тост не мешал кликам по кнопкам */
+  text-align: center;
+  max-width: 80%;
+  word-break: break-word;
+}
+
+/* Адаптация под Telegram Web App (если окружение определено) */
+.telegram-env .custom-toast {
+  background: var(--tg-theme-secondary_bg_color, rgba(0, 0, 0, 0.8));
+  color: var(--tg-theme-text_color, #fff);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════ */
 /*  📱 10. АДАПТИВНОСТЬ (МОБИЛЬНЫЕ УСТРОЙСТВА)                                  */
 /* ════════════════════════════════════════════════════════════════════════════════ */
 
@@ -1024,6 +1053,13 @@ body {
     flex-direction: column;
     gap: 15px;
   }
+}
+
+  .custom-toast {
+    bottom: 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+    max-width: 90%;
 }
 
 @media (max-width: 480px) {
