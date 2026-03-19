@@ -956,7 +956,7 @@ body {
 
 .custom-toast {
   position: fixed;
-  bottom: 20px;
+  top: 10%;
   left: 50%;
   transform: translateX(-50%);
   background: var(--photo-counter-bg, rgba(0, 0, 0, 0.8));
