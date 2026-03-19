@@ -956,14 +956,15 @@ body {
 
 .custom-toast {
   position: fixed;
-  top: 10%;
+  top: 20px;
+  bottom: auto;
   left: 50%;
   transform: translateX(-50%);
   background: var(--photo-counter-bg, rgba(0, 0, 0, 0.8));
   color: #fff;
   padding: 10px 20px;
   border-radius: var(--radius-sm);
-  z-index: 10001;
+  z-index: 10000;
   font-size: 16px;
   box-shadow: var(--shadow);
   transition: opacity 0.3s ease;
