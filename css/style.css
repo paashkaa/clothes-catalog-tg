@@ -1057,7 +1057,8 @@ body {
 }
 
   .custom-toast {
-    bottom: 15px;
+    top: 20px;
+    bottom: auto;
     padding: 8px 16px;
     font-size: 14px;
     max-width: 90%;

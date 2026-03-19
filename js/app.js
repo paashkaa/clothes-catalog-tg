@@ -174,7 +174,7 @@ function initActionButtons() {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(textToCopy).then(() => {
                         showToast(`✅ Путь скопирован: ${textToCopy}`);
-						setTimeout(() => Telegram.WebApp.close(), 1000);
+						setTimeout(() => Telegram.WebApp.close(), 1500);
                     }).catch(() => {
                         Telegram.WebApp.showAlert('❌ Не удалось скопировать. Попробуйте вручную.');
                     });
@@ -187,7 +187,7 @@ function initActionButtons() {
                     document.execCommand('copy');
                     document.body.removeChild(textarea);
                     showToast(`✅ Путь скопирован: ${textToCopy}`);
-					setTimeout(() => Telegram.WebApp.close(), 1000);
+					setTimeout(() => Telegram.WebApp.close(), 1500);
                 }
             }
         });
