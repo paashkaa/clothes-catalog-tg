@@ -224,6 +224,8 @@ async function loadData() {
         
         state.folders = data.folders || [];
         state.flatList = data.flat_list || [];
+		
+		searchEngine = createSearchEngine(state.flatList);
         
         updateUI();
         
@@ -366,25 +368,11 @@ function renderFlatView(items, isSearchResult = false) {
     });
 }
 
-// ========== ФИЛЬТРАЦИЯ ДЛЯ ПОИСКА ==========
+let searchEngine = null;
+
 function getFilteredFlatList() {
-    if (!state.searchQuery) return state.flatList;
-    const query = state.searchQuery.toLowerCase().trim();
-    return state.flatList.filter(item => {
-        // Имя файла
-        if (item.name && item.name.toLowerCase().includes(query)) return true;
-        // Имя папки
-        if (item.folder && item.folder.toLowerCase().includes(query)) return true;
-        // Пол
-        if (item.gender && item.gender.toLowerCase().includes(query)) return true;
-        // Категория
-        if (item.category && item.category.toLowerCase().includes(query)) return true;
-        // Элементы одежды
-        if (item.items && Array.isArray(item.items) && item.items.some(i => i.toLowerCase().includes(query))) return true;
-        // Цвета
-        if (item.colors && Array.isArray(item.colors) && item.colors.some(c => c.toLowerCase().includes(query))) return true;
-        return false;
-    });
+    if (!searchEngine) return state.flatList;
+    return searchEngine.search(state.searchQuery);
 }
 
 // (Функция для папок при поиске не используется, но оставлена для целостности)
