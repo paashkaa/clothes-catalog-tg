@@ -1,4 +1,4 @@
-// app.js - Каталог одежды v2.0
+// app.js - Каталог одежды v3.1 (поиск с метаданными + auto-flat при поиске)
 console.log('👗 Каталог одежды инициализирован');
 
 // Конфигурация
@@ -41,7 +41,7 @@ const elements = {
 const state = {
     folders: [],
     flatList: [],
-    currentView: 'folders',
+    currentView: 'folders',      // 'folders' или 'flat'
     currentFolder: null,
     currentPhotoIndex: 0,
     searchQuery: '',
@@ -95,34 +95,6 @@ function setupTheme() {
     applyTheme();
     updateThemeButton();
 }
-/*
-function applyTheme() {
-    if (state.isTelegram) {
-        document.documentElement.style.setProperty('--bg-dark', 'var(--tg-theme-bg-color)');
-        document.documentElement.style.setProperty('--bg-card', 'var(--tg-theme-secondary-bg-color)');
-        document.documentElement.style.setProperty('--text-primary', 'var(--tg-theme-text-color)');
-        document.documentElement.style.setProperty('--text-secondary', 'var(--tg-theme-hint-color)');
-        document.documentElement.style.setProperty('--border-color', 'var(--tg-theme-border-color, #333)');
-        document.documentElement.style.setProperty('--accent', 'var(--tg-theme-link-color)');
-    } else {
-        if (state.theme === 'dark') {
-            document.documentElement.style.setProperty('--bg-dark', '#121212');
-            document.documentElement.style.setProperty('--bg-card', '#1e1e1e');
-            document.documentElement.style.setProperty('--text-primary', '#e0e0e0');
-            document.documentElement.style.setProperty('--text-secondary', '#aaa');
-            document.documentElement.style.setProperty('--border-color', '#333');
-            document.documentElement.style.setProperty('--accent', '#6c63ff');
-        } else {
-            document.documentElement.style.setProperty('--bg-dark', '#ffffff');
-            document.documentElement.style.setProperty('--bg-card', '#f5f5f5');
-            document.documentElement.style.setProperty('--text-primary', '#333333');
-            document.documentElement.style.setProperty('--text-secondary', '#666666');
-            document.documentElement.style.setProperty('--border-color', '#ddd');
-            document.documentElement.style.setProperty('--accent', '#6c63ff');
-        }
-    }
-}
-*/
 
 function applyTheme() {
     if (state.isTelegram) {
@@ -165,21 +137,19 @@ function initActionButtons() {
         Telegram.WebApp.MainButton.onClick(() => {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
                 const photo = state.currentFolder.photos[state.currentPhotoIndex];
-                const filename = photo.original_path || photo.original; // например, "clothes_library/25-02-2026/25-02-2026-195837.png"
+                const filename = photo.original_path || photo.original;
                 if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
                     Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
-                // Копируем в буфер обмена
                 const textToCopy = filename;
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(textToCopy).then(() => {
                         showToast(`✅ Путь скопирован: ${textToCopy}`);
-						setTimeout(() => Telegram.WebApp.close(), 1500);
+                        setTimeout(() => Telegram.WebApp.close(), 1500);
                     }).catch(() => {
                         Telegram.WebApp.showAlert('❌ Не удалось скопировать. Попробуйте вручную.');
                     });
                 } else {
-                    // fallback
                     const textarea = document.createElement('textarea');
                     textarea.value = textToCopy;
                     document.body.appendChild(textarea);
@@ -187,7 +157,7 @@ function initActionButtons() {
                     document.execCommand('copy');
                     document.body.removeChild(textarea);
                     showToast(`✅ Путь скопирован: ${textToCopy}`);
-					setTimeout(() => Telegram.WebApp.close(), 1500);
+                    setTimeout(() => Telegram.WebApp.close(), 1500);
                 }
             }
         });
@@ -210,6 +180,38 @@ function initActionButtons() {
     }
 }
 
+// ========== НОРМАЛИЗАЦИЯ ДАННЫХ ==========
+function normalizeMetadata(item) {
+    if (typeof item.items === 'string') {
+        item.items = item.items.split(',').map(s => s.trim()).filter(s => s);
+    }
+    if (typeof item.colors === 'string') {
+        item.colors = item.colors.split(',').map(s => s.trim()).filter(s => s);
+    }
+    if (!Array.isArray(item.items)) item.items = [];
+    if (!Array.isArray(item.colors)) item.colors = [];
+    if (item.gender) item._genderLower = item.gender.toLowerCase();
+    if (item.category) item._categoryLower = item.category.toLowerCase();
+    return item;
+}
+
+function normalizeAllData(data) {
+    if (data.folders) {
+        data.folders.forEach(folder => {
+            if (folder.photos) {
+                folder.photos.forEach(photo => normalizeMetadata(photo));
+                folder.photos.sort((a, b) => a.name.localeCompare(b.name));
+            }
+        });
+        data.folders.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (data.flat_list) {
+        data.flat_list.forEach(item => normalizeMetadata(item));
+        data.flat_list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return data;
+}
+
 // ========== ЗАГРУЗКА ДАННЫХ ==========
 async function loadData() {
     try {
@@ -218,6 +220,7 @@ async function loadData() {
         
         let data = await response.json();
         data = fixPaths(data);
+        data = normalizeAllData(data);
         
         state.folders = data.folders || [];
         state.flatList = data.flat_list || [];
@@ -275,14 +278,21 @@ function updateUI() {
     }
 }
 
+// ========== ОТРИСОВКА (С АВТО-ПЛОСКИМ ПРИ ПОИСКЕ) ==========
 function renderItems() {
-    const filteredFolders = getFilteredFolders();
-    const filteredFlatList = getFilteredFlatList();
+    const hasQuery = state.searchQuery && state.searchQuery.trim() !== '';
     
-    if (state.currentView === 'flat') {
-        renderFlatView(filteredFlatList);
+    // Если есть поисковый запрос — всегда показываем плоский список результатов
+    if (hasQuery) {
+        const results = getFilteredFlatList();
+        renderFlatView(results, true);
     } else {
-        renderFoldersView(filteredFolders);
+        // Нет поиска — показываем выбранный режим
+        if (state.currentView === 'flat') {
+            renderFlatView(state.flatList, false);
+        } else {
+            renderFoldersView(state.folders);
+        }
     }
 }
 
@@ -319,13 +329,20 @@ function renderFoldersView(folders) {
     });
 }
 
-function renderFlatView(items) {
+function renderFlatView(items, isSearchResult = false) {
     elements.foldersContainer.className = 'folders-container flat-view';
     elements.foldersContainer.innerHTML = '';
     
     if (items.length === 0) {
         elements.foldersContainer.innerHTML = '<div class="loading"><p>Ничего не найдено</p></div>';
         return;
+    }
+    
+    if (isSearchResult) {
+        const header = document.createElement('div');
+        header.className = 'search-results-header';
+        header.textContent = `🔍 Найдено: ${items.length}`;
+        elements.foldersContainer.appendChild(header);
     }
     
     items.forEach((item, index) => {
@@ -349,21 +366,34 @@ function renderFlatView(items) {
     });
 }
 
+// ========== ФИЛЬТРАЦИЯ ДЛЯ ПОИСКА ==========
+function getFilteredFlatList() {
+    if (!state.searchQuery) return state.flatList;
+    const query = state.searchQuery.toLowerCase().trim();
+    return state.flatList.filter(item => {
+        // Имя файла
+        if (item.name && item.name.toLowerCase().includes(query)) return true;
+        // Имя папки
+        if (item.folder && item.folder.toLowerCase().includes(query)) return true;
+        // Пол
+        if (item.gender && item.gender.toLowerCase().includes(query)) return true;
+        // Категория
+        if (item.category && item.category.toLowerCase().includes(query)) return true;
+        // Элементы одежды
+        if (item.items && Array.isArray(item.items) && item.items.some(i => i.toLowerCase().includes(query))) return true;
+        // Цвета
+        if (item.colors && Array.isArray(item.colors) && item.colors.some(c => c.toLowerCase().includes(query))) return true;
+        return false;
+    });
+}
+
+// (Функция для папок при поиске не используется, но оставлена для целостности)
 function getFilteredFolders() {
     if (!state.searchQuery) return state.folders;
     const query = state.searchQuery.toLowerCase();
     return state.folders.filter(folder => 
         folder.name.toLowerCase().includes(query) ||
-        folder.path.toLowerCase().includes(query)
-    );
-}
-
-function getFilteredFlatList() {
-    if (!state.searchQuery) return state.flatList;
-    const query = state.searchQuery.toLowerCase();
-    return state.flatList.filter(item =>
-        item.name.toLowerCase().includes(query) ||
-        item.folder.toLowerCase().includes(query)
+        (folder.path && folder.path.toLowerCase().includes(query))
     );
 }
 
@@ -372,12 +402,27 @@ function setupEventListeners() {
     if (elements.searchInput) {
         elements.searchInput.addEventListener('input', (e) => {
             state.searchQuery = e.target.value;
-            renderItems();
+            renderItems();   // автоматически переключит вид при поиске
         });
     }
     
     if (elements.toggleViewBtn) {
-        elements.toggleViewBtn.addEventListener('click', toggleView);
+        elements.toggleViewBtn.addEventListener('click', () => {
+            // Переключаем вид только если нет активного поиска
+            if (!state.searchQuery || state.searchQuery.trim() === '') {
+                state.currentView = state.currentView === 'folders' ? 'flat' : 'folders';
+                elements.viewText.textContent = state.currentView === 'folders' ? 'Папки' : 'Все';
+                renderItems();
+                localStorage.setItem('catalogView', state.currentView);
+            } else {
+                // Если поиск активен, игнорируем переключение или можно очистить поиск
+                // По желанию: очистить поиск
+                // state.searchQuery = '';
+                // elements.searchInput.value = '';
+                // renderItems();
+                showToast('Сначала очистите поиск', 1000);
+            }
+        });
     }
     
     if (elements.toggleThemeBtn) {
@@ -405,13 +450,6 @@ function setupEventListeners() {
     document.addEventListener('keydown', handleKeyboardNavigation);
 }
 
-function toggleView() {
-    state.currentView = state.currentView === 'folders' ? 'flat' : 'folders';
-    elements.viewText.textContent = state.currentView === 'folders' ? 'Папки' : 'Все';
-    renderItems();
-    localStorage.setItem('catalogView', state.currentView);
-}
-
 function toggleTheme() {
     if (state.isTelegram) return;
     
@@ -425,9 +463,9 @@ function toggleTheme() {
 
 function refreshErrorImages() {
   document.querySelectorAll('img.is-error').forEach(img => {
-    const currentSrc = img.src; // это data URI заглушки
-    img.src = '';               // сбрасываем
-    img.src = currentSrc;       // ставим ту же заглушку (но она уже новая, из getErrorPreview)
+    const currentSrc = img.src;
+    img.src = '';
+    img.src = currentSrc;
   });
 }
 
@@ -505,8 +543,7 @@ function openLightbox(photoIndex) {
     if (state.isTelegram && Telegram.WebApp.HapticFeedback?.impactOccurred) {
         Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
-	// 🔥 ПОКАЗЫВАЕМ КНОПКУ "📋 Скопировать путь" ТОЛЬКО В ЛАЙТБОКСЕ
-	if (state.isTelegram && Telegram.WebApp?.MainButton) {
+    if (state.isTelegram && Telegram.WebApp?.MainButton) {
         Telegram.WebApp.MainButton.show();
         Telegram.WebApp.MainButton.enable();
     }
@@ -534,6 +571,36 @@ function updateLightbox() {
     elements.lightboxFilename.textContent = photo.name;
     elements.lightboxFolder.textContent = state.currentFolder.name;
     elements.photoCounter.textContent = `${state.currentPhotoIndex + 1} / ${state.currentFolder.photos.length}`;
+	
+	updateLightboxMetadata(photo);
+}
+
+function updateLightboxMetadata(photo) {
+    // Пол
+    const genderEl = document.getElementById('lightbox-gender');
+    if (genderEl) {
+        genderEl.textContent = photo.gender ? `👤 : ${photo.gender}` : '';
+    }
+    
+    // Категория
+    const categoryEl = document.getElementById('lightbox-category');
+    if (categoryEl) {
+        categoryEl.textContent = photo.category ? `📁 : ${photo.category}` : '';
+    }
+    
+    // Предметы одежды (массив → строка)
+    const itemsEl = document.getElementById('lightbox-items');
+    if (itemsEl) {
+        const itemsText = (photo.items && photo.items.length) ? photo.items.join(', ') : '';
+        itemsEl.textContent = itemsText ? `🧥 : ${itemsText}` : '';
+    }
+    
+    // Цвета (массив → строка)
+    const colorsEl = document.getElementById('lightbox-colors');
+    if (colorsEl) {
+        const colorsText = (photo.colors && photo.colors.length) ? photo.colors.join(', ') : '';
+        colorsEl.textContent = colorsText ? `🎨 : ${colorsText}` : '';
+    }
 }
 
 function showPrevPhoto() {
@@ -609,7 +676,6 @@ function showFolderChangeIndicator(newFolderName) {
 function closeLightbox() {
     elements.lightbox.classList.remove('active');
     document.body.style.overflow = 'auto';
-    // 🔥 СКРЫВАЕМ КНОПКУ ПРИ ЗАКРЫТИИ
     if (state.isTelegram && Telegram.WebApp?.MainButton) {
         Telegram.WebApp.MainButton.hide();
     }
@@ -695,7 +761,4 @@ window.app = {
     closeFolderModal,
     openLightbox,
     closeLightbox
-
 };
-
-
