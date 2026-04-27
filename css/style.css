@@ -1037,8 +1037,8 @@ body {
   }
 
   .folders-container {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
   }
 
   .folder-preview-container {
@@ -1049,12 +1049,38 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-	
+
+  .folder-info-bar {
+    font-size: 0.7rem;
+    height: 28px;
+    padding: 0 8px;
+  }
+  
+  .folder-info-name {
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  
+  .folder-info-stats {
+    font-size: 0.65rem;
+  }
+  
   .photo-preview-container {
     aspect-ratio: 1/1;
     height: auto;
   }
 
+  .photos-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .photo-info-bar {
+    font-size: 0.65rem;
+    height: 24px;
+    padding: 0 6px;
+  }
+  
   .lightbox-nav {
 	top: 55%;
     width: 55px;
@@ -1109,20 +1135,19 @@ body {
     flex-direction: column;
     gap: 15px;
   }
-}
-
+  
   .custom-toast {
     top: 20px;
     bottom: auto;
     padding: 8px 16px;
     font-size: 14px;
     max-width: 90%;
-}
+  }
 
-    .lightbox-meta {
-        white-space: normal;
-        text-align: center;
-    }
+  .lightbox-meta {
+      white-space: normal;
+      text-align: center;
+  }
 	
 @media (max-width: 480px) {
   .title {
@@ -1130,7 +1155,8 @@ body {
   }
 
   .folders-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
   .folder-preview-container {
@@ -1149,9 +1175,27 @@ body {
     color: var(--lightbox-nav-color);
   }
 
-  .photos-container {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  .lightbox-actions {
+    display: flex;
+    flex-direction: column;
+	align-items: center;
+    text-align: center;
+    justify-content: center;
     gap: 12px;
+    margin-top: 8px;
+  }
+
+  .lightbox-metadata-group {
+    display: block;
+    width: 80%;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .photos-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .photo-thumb-preview-container {

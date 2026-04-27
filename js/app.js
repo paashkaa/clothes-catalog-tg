@@ -322,7 +322,7 @@ function renderFoldersView(folders) {
           </div>
           <div class="folder-info-bar">
             <div class="folder-info-name">${escapeHtml(folder.name)}</div>
-            <div class="folder-info-stats">${folder.photo_count} | ${folder.size_human || ''}</div>
+            <div class="folder-info-stats">${folder.photo_count}</div>
           </div>
         `;
         
