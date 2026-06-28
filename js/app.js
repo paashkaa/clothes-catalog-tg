@@ -65,7 +65,7 @@ async function init() {
 }
 
 function checkEnvironment() {
-    state.isTelegram = !!(window.Telegram?.WebApp?.initData);
+    state.isTelegram = !!(window.Telegram?.WebApp?.initDataUnsafe);
     
     if (state.isTelegram) {
         console.log('✅ Запущено в Telegram Web App');
