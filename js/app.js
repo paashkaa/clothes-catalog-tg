@@ -65,7 +65,10 @@ async function init() {
 }
 
 function checkEnvironment() {
-    state.isTelegram = !!(window.Telegram?.WebApp?.initDataUnsafe);
+    const wa = window.Telegram?.WebApp;
+    // initDataUnsafe — объект {} даже в обычном браузере.
+    // В реальном Telegram там есть user/chat_instance.
+    state.isTelegram = !!(wa?.initDataUnsafe?.user);
     
     if (state.isTelegram) {
         console.log('✅ Запущено в Telegram Web App');
@@ -136,27 +139,24 @@ function initActionButtons() {
         Telegram.WebApp.MainButton.hide();
         Telegram.WebApp.MainButton.onClick(sendCurrentPhoto);
 
-        // Also wire the lightbox button directly
         if (elements.lightboxSave) {
             elements.lightboxSave.addEventListener('click', sendCurrentPhoto);
         }
     } else if (elements.lightboxSave) {
         elements.lightboxSave.textContent = '💾 Сохранить';
-        elements.lightboxSave.addEventListener('click', () => { /* download only */ });
+        elements.lightboxSave.addEventListener('click', downloadCurrentPhoto);
     }
 }
 
-function sendCurrentPhoto() {
-    if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
-        const photo = state.currentFolder.photos[state.currentPhotoIndex];
-        const filename = photo.original_path || photo.original;
-		console.log('sendData called, filename:', filename, 'photo:', photo);
-        if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
-        Telegram.WebApp.sendData(filename);
-        //Telegram.WebApp.close();
-    }
+function downloadCurrentPhoto() {
+    const photo = state.currentFolder?.photos?.[state.currentPhotoIndex];
+    if (!photo) return;
+    const link = document.createElement('a');
+    link.href = photo.path;
+    link.download = photo.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // ========== НОРМАЛИЗАЦИЯ ДАННЫХ ==========
