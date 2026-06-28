@@ -150,11 +150,12 @@ function sendCurrentPhoto() {
     if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
         const photo = state.currentFolder.photos[state.currentPhotoIndex];
         const filename = photo.original_path || photo.original;
+		console.log('sendData called, filename:', filename, 'photo:', photo);
         if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
             Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         }
         Telegram.WebApp.sendData(filename);
-        Telegram.WebApp.close();
+        //Telegram.WebApp.close();
     }
 }
 
