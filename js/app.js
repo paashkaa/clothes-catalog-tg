@@ -134,33 +134,27 @@ function initActionButtons() {
     if (state.isTelegram && Telegram.WebApp?.MainButton) {
         Telegram.WebApp.MainButton.setText('✨ Применить');
         Telegram.WebApp.MainButton.hide();
-        Telegram.WebApp.MainButton.onClick(() => {
-            if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
-                const photo = state.currentFolder.photos[state.currentPhotoIndex];
-                const filename = photo.original_path || photo.original;
-                if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }
-                Telegram.WebApp.sendData(filename);
-                Telegram.WebApp.close();
-            }
-        });
+        Telegram.WebApp.MainButton.onClick(sendCurrentPhoto);
+
+        // Also wire the lightbox button directly
+        if (elements.lightboxSave) {
+            elements.lightboxSave.addEventListener('click', sendCurrentPhoto);
+        }
     } else if (elements.lightboxSave) {
         elements.lightboxSave.textContent = '💾 Сохранить';
-        elements.lightboxSave.addEventListener('click', () => {
-            if (state.currentFolder?.photos?.[state.currentPhotoIndex]?.path) {
-                const photo = state.currentFolder.photos[state.currentPhotoIndex];
-                const link = document.createElement('a');
-                link.href = photo.path;
-                link.download = photo.name;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                elements.lightboxSave.classList.add('btn-clicked');
-                setTimeout(() => elements.lightboxSave.classList.remove('btn-clicked'), 300);
-            }
-        });
+        elements.lightboxSave.addEventListener('click', () => { /* download only */ });
+    }
+}
+
+function sendCurrentPhoto() {
+    if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
+        const photo = state.currentFolder.photos[state.currentPhotoIndex];
+        const filename = photo.original_path || photo.original;
+        if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
+            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+        Telegram.WebApp.sendData(filename);
+        Telegram.WebApp.close();
     }
 }
 
