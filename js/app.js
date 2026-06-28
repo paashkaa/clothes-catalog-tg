@@ -132,7 +132,7 @@ function showToast(message, duration = 1500) {
 
 function initActionButtons() {
     if (state.isTelegram && Telegram.WebApp?.MainButton) {
-        Telegram.WebApp.MainButton.setText('📋 Скопировать путь');
+        Telegram.WebApp.MainButton.setText('✨ Применить');
         Telegram.WebApp.MainButton.hide();
         Telegram.WebApp.MainButton.onClick(() => {
             if (state.currentFolder?.photos?.[state.currentPhotoIndex]) {
@@ -141,24 +141,8 @@ function initActionButtons() {
                 if (Telegram.WebApp.HapticFeedback?.notificationOccurred) {
                     Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
-                const textToCopy = filename;
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        showToast(`✅ Путь скопирован: ${textToCopy}`);
-                        setTimeout(() => Telegram.WebApp.close(), 1500);
-                    }).catch(() => {
-                        Telegram.WebApp.showAlert('❌ Не удалось скопировать. Попробуйте вручную.');
-                    });
-                } else {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = textToCopy;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    showToast(`✅ Путь скопирован: ${textToCopy}`);
-                    setTimeout(() => Telegram.WebApp.close(), 1500);
-                }
+                Telegram.WebApp.sendData(filename);
+                Telegram.WebApp.close();
             }
         });
     } else if (elements.lightboxSave) {
